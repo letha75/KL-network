@@ -8,41 +8,52 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_project_miki"
-        android:logo="@mipmap/ic_launcher_project_miki"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:logo="@mipmap/ic_launcher_project_miki"
+        android:theme="@style/AppTheme" >
         <activity
             android:name=".activity.MainActivity"
-            android:label="@string/receipt">
+            android:label="@string/receipt" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.BillSplitterActivity"
-            android:label="@string/split_bill"
-            android:theme="@style/BillSplitterTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="wwckl.projectmiki.activity.MainActivity" />
-        </activity>
-        <activity
             android:name=".activity.WelcomeActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name" >
         </activity>
         <activity
             android:name=".activity.LoadingActivity"
-            android:label="@string/cleaning_image">
+            android:label="@string/cleaning_image" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="wwckl.projectmiki.activity.MainActivity" />
         </activity>
-        <activity android:name=".activity.SettingsActivity"
-            android:label="@string/app_name">
+        <activity
+            android:name=".activity.EditActivity"
+            android:label="@string/title_activity_edit"
+            android:theme="@style/BillSplitterTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="wwckl.projectmiki.activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.BillSplitterActivity"
+            android:label="@string/split_bill"
+            android:theme="@style/BillSplitterTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="wwckl.projectmiki.activity.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:label="@string/app_name" >
             <intent-filter>
-                <action
-                    android:name="activity.SettingsActivity" />
+                <action android:name="activity.SettingsActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -50,7 +61,7 @@
         <fragment
             android:name=".fragment.EditFragment"
             android:label="@string/create_bill"
-            android:theme="@style/BillSplitterTheme">
+            android:theme="@style/BillSplitterTheme" >
         </fragment>
     </application>
 

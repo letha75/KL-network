@@ -22,7 +22,6 @@ import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ActionMode;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     final int RESUME_FROM_OTHER = 0;
     final int RESUME_FROM_CAMERA = 1;
     final int RESUME_FROM_GALLERY = 2;
+    final int RESUME_FROM_CROP = 3;
     final long fFileSizeToScale = 1000000; // 1 MB in bytes
 
     private int mResumeFrom = 0; // what instruction to display if any.
@@ -61,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
             0, 0, 0,  1, 0};
 
     private ImageView mImageView;
-    private TextView mTextView;
+    private TextView mSelectTextView;
+    private TextView mAdjustContrastTextView;
     private TextView mAdjustThresholdTextView;
     private SeekBar mColorThresholdBar;
     private SeekBar mContrastBar;
     private Button mNextButton;
     private SharedPreferences mSharedPrefs;
+    int mLtGray, mDkGray, mLightishGray, mDarkishGray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +78,15 @@ public class MainActivity extends AppCompatActivity {
         // get preference manager
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        // get colors from resource
+        mLtGray = getResources().getColor(R.color.light_gray);
+        mDkGray = getResources().getColor(R.color.dark_gray);
+        mLightishGray = getResources().getColor(R.color.lightish_gray);
+        mDarkishGray = getResources().getColor(R.color.darkish_gray);
+
         // Get layout objects for manipulation later.
-        mTextView = (TextView)findViewById(R.id.textView);
+        mSelectTextView = (TextView)findViewById(R.id.tvSelect);
+        mAdjustContrastTextView = (TextView)findViewById(R.id.tvAdjustContrast);
         mAdjustThresholdTextView = (TextView)findViewById(R.id.tvAdjustThreshold);
         mNextButton = (Button)findViewById(R.id.button_next);
 
@@ -87,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 adjustContrast(convertContrastValue(progress));
+                // allow user to start OCR
+                mNextButton.setEnabled(true);
             }
 
             @Override
@@ -104,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 adjustThreshold(progress);
+                // allow user to start OCR
+                mNextButton.setEnabled(true);
             }
 
             @Override
@@ -146,10 +159,8 @@ public class MainActivity extends AppCompatActivity {
 
         if(mPicturePath.isEmpty()){
             // Prompt user to Get image of receipt
-            mTextView.setText(getString(R.string.take_a_photo_receipt)
-                    + "\n or \n"
-                    + getString(R.string.select_image_from_gallery));
-
+            mSelectTextView.setVisibility(View.VISIBLE);
+            mAdjustContrastTextView.setVisibility(View.INVISIBLE);
             mAdjustThresholdTextView.setVisibility(View.INVISIBLE);
             mContrastBar.setVisibility(View.INVISIBLE);
             mColorThresholdBar.setVisibility(View.INVISIBLE);
@@ -157,8 +168,8 @@ public class MainActivity extends AppCompatActivity {
             mNextButton.setEnabled(false);
         }
         else{ // image will be displayed, change text.
-            mTextView.setText(getString(R.string.adjust_contrast));
-
+            mSelectTextView.setVisibility(View.GONE);
+            mAdjustContrastTextView.setVisibility(View.VISIBLE);
             mAdjustThresholdTextView.setVisibility(View.VISIBLE);
             mContrastBar.setVisibility(View.VISIBLE);
             mColorThresholdBar.setVisibility(View.VISIBLE);
@@ -166,13 +177,13 @@ public class MainActivity extends AppCompatActivity {
             applyFilter();
             adjustThreshold(mColorThresholdBar.getProgress());
 
-            mNextButton.setEnabled(true);
-
             switch (mResumeFrom) {
                 case RESUME_FROM_CAMERA:
-                    displayToast(getString(R.string.crop_picture_instructions), true);
-                    break;
                 case RESUME_FROM_GALLERY:
+                    displayToast(getString(R.string.crop_picture_instructions), true);
+                    performCrop();
+                    break;
+                case RESUME_FROM_CROP:
                     displayToast(getString(R.string.adjust_picture_instructions), true);
                     break;
                 default:
@@ -386,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Make sure recognized text is empty
         Receipt.setRecognizedText("");
-        Intent intentEdit = new Intent(this, BillSplitterActivity.class);
+        Intent intentEdit = new Intent(this, EditActivity.class);
         startActivity(intentEdit);
     }
 
@@ -404,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             // set instructions for after cropping
-            mResumeFrom = RESUME_FROM_GALLERY;
+            mResumeFrom = RESUME_FROM_CROP;
 
             //call the standard crop action intent (the user device may not support it)
             Intent cropIntent = new Intent("com.android.camera.action.CROP");
@@ -469,9 +480,11 @@ public class MainActivity extends AppCompatActivity {
     // We want contrasting shades, so no mid-shades such as gray.
     private Bitmap changeColor(Bitmap src, int progress) {
         final int absBlack = Math.abs(Color.BLACK);
-        final int absWhite = Math.abs(Color.WHITE);
+        final int white = Color.WHITE;
+        int gray;
         int absLtGray = Math.abs(Color.LTGRAY);
         int absDkGray = Math.abs(Color.DKGRAY);
+        int absGray = Math.abs(Color.GRAY);
         int width = src.getWidth();
         int height = src.getHeight();
         int[] pixels = new int[width * height];
@@ -485,13 +498,27 @@ public class MainActivity extends AppCompatActivity {
         //threshold to change to white or black
         threshold = factor * progress;
         if (progress < (maxProgress/2)){
-            absLtGray = threshold / 3 * 2;
-            absDkGray = threshold + (threshold - absLtGray);
+            absLtGray = threshold / 2;
+            absDkGray = threshold + ( (absBlack - threshold) / 3 * 2 );
+            absGray = threshold + ( (absDkGray - threshold) / 2 );
+            // set to darker gray.
+            gray = mDarkishGray;
         }
         else {
-            absDkGray = threshold + ((absBlack - threshold) / 3);
-            absLtGray = threshold - (absDkGray - threshold);
+            absDkGray = threshold + ((absBlack - threshold) / 2);
+            absLtGray = threshold / 3;
+            absGray = threshold;
+            threshold = absLtGray * 2;
+            gray = mLightishGray;
         }
+        // by end of calculations: white < ltGray < threshold < gray < dkGray < black
+
+        /* DEBUGGING
+        Log.d("color", "threshold " + Integer.toString(threshold));
+        Log.d("color", "absLtGray " + Integer.toString(absLtGray));
+        Log.d("color", "absGray   " + Integer.toString(absGray));
+        Log.d("color", "absDkGray " + Integer.toString(absDkGray));
+        */
 
         // get pixel array from source
         src.getPixels(pixels, 0, width, 0, 0, width, height);
@@ -505,16 +532,19 @@ public class MainActivity extends AppCompatActivity {
                 int index = y * width + x;
                 pixel = Math.abs(pixels[index]);
                 if(pixel < absLtGray){
-                    pixels[index] = Color.WHITE;
-                }
-                else if(pixel > absDkGray){
-                    pixels[index] = Color.BLACK;
+                    pixels[index] = white;
                 }
                 else if(pixel < threshold){
-                    pixels[index] = Color.LTGRAY;
+                    pixels[index] = mLtGray;
+                }
+                else if(pixel < absGray){
+                    pixels[index] = gray;
+                }
+                else if(pixel < absDkGray){
+                    pixels[index] = mDkGray;
                 }
                 else{
-                    pixels[index] = Color.DKGRAY;
+                    pixels[index] = Color.BLACK;
                 }
             }
         }

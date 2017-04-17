@@ -1,9 +1,18 @@
 <resources>
-
     <color name="primary_darker">#550000</color>
     <color name="primary_dark">#800000</color>
-    <color name="primary_light">#D35F5F</color>
-    <color name="secondary_dark">#AA0000</color>
-    <color name="secondary_light">#E9AFAF</color>
-    <color name="background">#F4D7D7</color>
+    <color name="secondary_darker">#D40000</color>
+    <color name="secondary_dark">#FF0000</color>
+    <color name="primary_light">#FF2A2A</color>
+    <color name="secondary_light">#FF5555</color>
+    <color name="primary_lighter">#FF8080</color>
+    <color name="secondary_lighter">#FFAAAA</color>
+    <color name="background">#FFD5D5</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="light_gray">#F2F2F2</color>
+    <color name="lightish_gray">#E5E5E5</color>
+    <color name="darkish_gray">#404040</color>
+    <color name="dark_gray">#333333</color>
+    <color name="black">#000000</color>
 </resources>

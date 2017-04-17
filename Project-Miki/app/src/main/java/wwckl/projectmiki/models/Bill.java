@@ -1,22 +1,19 @@
 package wwckl.projectmiki.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by cheeyim on 2/2/2015.
  */
-public class Bill {
+public class Bill implements Parcelable {
     final int fMaxGSTpercent = 21;
     final int fMinGSTpercent = 5;
     final int fMaxSVCpercent = 21;
@@ -112,6 +109,60 @@ public class Bill {
 
     public Boolean getUseSubtotals() { return mUseSubtotals; }
 
+    public Bill() {}; // constructor
+
+    // ******************* PARCELABLE IMPLEMENTATION *******************
+    public static final Parcelable.Creator<Bill> CREATOR
+            = new Parcelable.Creator<Bill>() {
+
+        // This simply calls our new constructor (typically private) and
+        // passes along the unmarshalled `Parcel`, and then returns the new object!
+        @Override
+        public Bill createFromParcel(Parcel in) {
+            return new Bill(in);
+        }
+
+        // We just need to copy this and change the type to match our class.
+        @Override
+        public Bill[] newArray(int size) {
+            return new Bill[size];
+        }
+    };
+
+    public int describeContents() {
+        return 0;
+    }
+
+    private Bill(Parcel in) { readFromParcel(in); }
+
+    // parcel read and write must be in the exact same order
+    // Assumes new Edit Activity, therefore, mNoOfPplSharing and BillSplitStack is ignored for Parcel.
+    public void readFromParcel(Parcel in) {
+        mTotal = new BigDecimal(in.readString());
+        mSubTotal = new BigDecimal(in.readString());
+        mGST = new BigDecimal(in.readString());
+        mGSTpercent = in.readInt();
+        mSVC = new BigDecimal(in.readString());
+        mSVCpercent = in.readInt();
+        mAdjust = new BigDecimal(in.readString());
+        in.readTypedList(mListOfAllItems, Item.CREATOR);
+        mUseSubtotals = (in.readInt() == 0) ? false : true;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(mTotal.toString());
+        out.writeString(mSubTotal.toString());
+        out.writeString(mGST.toString());
+        out.writeInt(mGSTpercent);
+        out.writeString(mSVC.toString());
+        out.writeInt(mSVCpercent);
+        out.writeString(mAdjust.toString());
+        out.writeTypedList(mListOfAllItems);
+        out.writeInt((mUseSubtotals != null && mUseSubtotals) ? 1 : 0);
+    }
+    // ***************** END PARCELABLE IMPLEMENTATION *******************
+
     // add item to offset total
     protected void addOffsetItem(BigDecimal total) {
         BigDecimal sumOfItems = sumOfItems();
@@ -150,7 +201,21 @@ public class Bill {
         return percent.intValue();
     }
 
-    // return amount * 0.0x%
+    // Calculates the impliclit percentage of total = subAmount + fracAmount
+    protected int calculateImplicitPercent(BigDecimal fracAmount, BigDecimal total){
+        if (isZero(fracAmount))
+            return 0;
+        if (isZero(total))
+            return 0;
+
+        BigDecimal percent;
+        percent = total.subtract(fracAmount); // subtotal
+        percent = percent.multiply(BigDecimal.valueOf(100));
+        percent = fracAmount.divide(percent, 0, BigDecimal.ROUND_HALF_EVEN);
+        return percent.intValue();
+    }
+
+    // return amount * x%, where x is percent
     protected BigDecimal calculatePercentageAmount(BigDecimal amount, int percent) {
         BigDecimal percentageAmount = new BigDecimal(0.00);
 
@@ -161,6 +226,24 @@ public class Bill {
 
         percentageAmount = amount.multiply(BigDecimal.valueOf(percent));
         percentageAmount = percentageAmount.divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_EVEN);
+
+        return percentageAmount;
+    }
+
+    // return the implicit amount of 0.0x% of subtotal
+    protected BigDecimal calculateImplicitPercentageAmount(BigDecimal amount, int percent) {
+        BigDecimal percentageAmount = new BigDecimal(0.00);
+        Integer tmpInt = 100;
+
+        if (isZero(amount))
+            return percentageAmount;
+        if (percent == 0)
+            return percentageAmount;
+
+        tmpInt += percent;
+        percentageAmount = amount.multiply(BigDecimal.valueOf(100));
+        percentageAmount = percentageAmount.divide(BigDecimal.valueOf(tmpInt), 2, BigDecimal.ROUND_HALF_EVEN); // subtotal
+        percentageAmount = amount.subtract(percentageAmount);
 
         return percentageAmount;
     }
@@ -370,6 +453,9 @@ public class Bill {
         mSVC = amount;
         if (!isZero(mSubTotal))
             mSVCpercent = calculatePercent(mSVC, mSubTotal);
+        else
+            mSVCpercent = calculateImplicitPercent(mSVC.subtract(mGST), mTotal);
+
         if(mUseSubtotals)
             mTotal = sumOfTotals();
         return true;
@@ -383,6 +469,8 @@ public class Bill {
         mSVCpercent = percent;
         if (!isZero(mSubTotal))
             mSVC = calculatePercentageAmount(mSubTotal, percent);
+        else
+            mSVC = calculateImplicitPercentageAmount(mTotal.subtract(mGST), percent);
         if(mUseSubtotals)
             mTotal = sumOfTotals();
         return true;
@@ -396,6 +484,9 @@ public class Bill {
         mGST = amount;
         if (!isZero(mSubTotal))
             mGSTpercent = calculatePercent(mGST, mSubTotal.add(mSVC));
+        else
+            mGSTpercent = calculateImplicitPercent(mGST, mTotal);
+
         if(mUseSubtotals)
             mTotal = sumOfTotals();
         return true;
@@ -409,6 +500,9 @@ public class Bill {
         mGSTpercent = percent;
         if (!isZero(mSubTotal))
             mGST = calculatePercentageAmount(mSubTotal.add(mSVC), percent);
+        else
+            mGST = calculateImplicitPercentageAmount(mTotal, percent);
+
         if(mUseSubtotals)
             mTotal = sumOfTotals();
         return true;
@@ -456,5 +550,6 @@ public class Bill {
     }
 
     // ******************* END EDIT FRAGMENT OPERATIONS ****************
+
 }
 

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -75,6 +76,11 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bill_splitter);
 
+        // Set app icon to be displayed on action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayUseLogoEnabled(true);
+        actionBar.setDisplayShowHomeEnabled(true);
+
         // get preference manager
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -119,22 +125,12 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
             mInstructionsTextView.setVisibility(View.GONE);
 
         // Initialise Bill contents
-        if (Receipt.getRecognizedText().isEmpty()) {
-            // assume new bill
-            mBill = (Bill) new ParseBill("1 Item 1.00");
-            // no associated image
-            Receipt.setReceiptBitmap(null);
-            startEditFragment();
-        }
-        else {
-            mBill = (Bill) new ParseBill(Receipt.getRecognizedText());
-            drawItemizedLayout();
-            updateTotals();
-            if(!mBill.isBillBalanced()){
-                displayToast(getString(R.string.bill_not_balanced), false);
-            }
-            displayToast(getString(R.string.click_menu_to_edit_bill), true);
-        }
+        Bundle b = getIntent().getExtras();
+        mBill = b.getParcelable("Bill");
+
+        // initialise contents
+        drawItemizedLayout();
+        updateTotals();
     }
 
     @Override
@@ -556,7 +552,7 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
                 if (remaingNumOfPplSharing > 0) {
                     amount = amount.add(mSummaryFragment.getTreatAmountPax());
                 }
-                summaryText = getString(R.string.guest) +" : $" + amount.toString();
+                summaryText = getString(R.string.amount) +": $" + amount.toString();
                 break;
             case TREAT_SHARE_TYPE:
             case SHARE_TYPE:
@@ -564,7 +560,7 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
                     amount = amount.add(mSummaryFragment.getTreatAmountPax().multiply(BigDecimal.valueOf(remaingNumOfPplSharing)));
                 }
             case TREAT_TYPE:
-                summaryText = getString(R.string.guest) + "s : $" + amount.toString();
+                summaryText = "pax. " + getString(R.string.amount) + ": $" + amount.toString();
                 break;
             default:
                 break;

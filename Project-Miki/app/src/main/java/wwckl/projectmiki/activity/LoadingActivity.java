@@ -3,11 +3,13 @@ package wwckl.projectmiki.activity;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -51,6 +53,11 @@ public class LoadingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
 
+        // Set app icon to be displayed on action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayUseLogoEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         // Set receipt image in background.
         mReceiptPicture = Receipt.getReceiptBitmap();
         if(mReceiptPicture == null)
@@ -82,17 +89,17 @@ public class LoadingActivity extends AppCompatActivity {
 
         // Store receipt text
         Receipt.setRecognizedText(mRecognizedText);
-        startBillSplitting();
+        startEditActiviy();
     }
 
-    public void startBillSplitting(){
-        Intent intent = new Intent(this, BillSplitterActivity.class);
+    public void startEditActiviy(){
+        Intent intent = new Intent(this, EditActivity.class);
         startActivity(intent);
     }
 
     // for onClick of Next button
-    public void startBillSplitting(View view) {
-        startBillSplitting();
+    public void startEditActiviy(View view) {
+        startEditActiviy();
     }
 
     // Start thread to run Tesseract

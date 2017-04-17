@@ -1,5 +1,6 @@
 package wwckl.projectmiki.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -14,7 +15,7 @@ import android.widget.CheckBox;
 
 import wwckl.projectmiki.R;
 
-public class WelcomeActivity extends AppCompatActivity {
+public class WelcomeActivity extends Activity {
     CheckBox checkBoxShowWelcome;
 
     @Override

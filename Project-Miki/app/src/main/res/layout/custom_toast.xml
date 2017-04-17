@@ -15,7 +15,7 @@
         android:layout_alignRight="@id/text"
         android:layout_alignStart="@id/text"
         android:layout_alignEnd="@id/text"
-        android:src="@drawable/toast_background"
+        android:src="@drawable/background"
         android:scaleType="fitXY" >
     </ImageView>
     <TextView android:id="@+id/text"

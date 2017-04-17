@@ -11,14 +11,20 @@
         android:onClick="onOptionsItemSelected"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/dutch"
-          android:title="@string/dutch"
-          app:showAsAction="always|withText"/>
+        android:title="@string/dutch"
+        app:showAsAction="always|withText"
+        android:hint="@string/dutch_hint"
+        android:background="@color/background"/>
     <item android:id="@+id/treat"
-          android:title="@string/treat"
-          app:showAsAction="always|withText"/>
+        android:title="@string/treat"
+        app:showAsAction="always|withText"
+        android:hint="@string/treat_hint"
+        android:background="@color/background"/>
     <item android:id="@+id/share"
-          android:title="@string/share"
-          app:showAsAction="always|withText"/>
+        android:title="@string/share"
+        app:showAsAction="always|withText"
+        android:hint="@string/share_hint"
+        android:background="@color/background"/>
     <item android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit_white_24dp"
         android:title="@string/edit_bill"

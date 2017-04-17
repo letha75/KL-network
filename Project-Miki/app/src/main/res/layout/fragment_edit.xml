@@ -93,7 +93,8 @@
         android:layout_weight="1"
         android:stretchColumns="3,5"
         android:id="@+id/layoutEditTotals"
-        android:focusable="false">
+        android:focusable="false"
+        android:background="@color/white">
 
         <TableRow
             android:layout_width="match_parent"

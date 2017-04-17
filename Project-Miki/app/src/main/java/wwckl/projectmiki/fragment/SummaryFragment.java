@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 
 import wwckl.projectmiki.R;
@@ -28,10 +29,14 @@ public class SummaryFragment extends Fragment {
     private BigDecimal mTreatAmountPax = BigDecimal.ZERO;
     private int mTotalNumOfPpl = 0;
     private BillSplitterActivity mBillSplitterActivity;
+    private String[] mAlphabets;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Get alphabets array
+        mAlphabets = getResources().getStringArray(R.array.alphabets);
+
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_summary, container, false);
         mLinearLayout = (LinearLayout) mView.findViewById(R.id.layoutSummaryFragment);
@@ -171,11 +176,11 @@ public class SummaryFragment extends Fragment {
         // Build SummaryText
         switch (billSplit.getSplitType()) {
             case TREAT_DUTCH_TYPE:
-                summaryText = "T-";
+                summaryText = "T+";
                 //summaryText = getBillSplitString(BillSplit.BillSplitType.TREAT_TYPE) + " ($" + mTreatAmountPax.toString() + ") ";
             case DUTCH_TYPE:
                 summaryText = summaryText + treatTypeText + " \t" + getString(R.string.guest) + " " +
-                        mTotalNumOfPpl + " : $" + amount.toString();
+                        Array.get(mAlphabets, mTotalNumOfPpl-1) + " : $" + amount.toString();
                 summaryTextView.setGravity(Gravity.RIGHT);
                 break;
 
@@ -186,7 +191,7 @@ public class SummaryFragment extends Fragment {
                 break;
 
             case TREAT_SHARE_TYPE:
-                summaryText = "T-";
+                summaryText = "T+";
                 //summaryText = getBillSplitString(BillSplit.BillSplitType.TREAT_TYPE) + " ($" + mTreatAmountPax.toString() + ") ";
             case SHARE_TYPE:
                 summaryText = summaryText + treatTypeText + " ($" + amount.toString() + ") by " +

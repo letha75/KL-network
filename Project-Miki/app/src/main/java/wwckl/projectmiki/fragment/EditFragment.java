@@ -2,6 +2,7 @@ package wwckl.projectmiki.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,7 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -28,9 +31,11 @@ import java.math.BigDecimal;
 
 import wwckl.projectmiki.R;
 import wwckl.projectmiki.activity.BillSplitterActivity;
+import wwckl.projectmiki.activity.EditActivity;
 import wwckl.projectmiki.activity.SettingsActivity;
 import wwckl.projectmiki.models.Bill;
 import wwckl.projectmiki.models.Item;
+import wwckl.projectmiki.models.ParseBill;
 import wwckl.projectmiki.models.Receipt;
 
 /**
@@ -43,6 +48,7 @@ public class EditFragment extends Fragment {
     private TableLayout mLayoutEditItems;
     private TableLayout mLayoutEditTotals;
     private BillSplitterActivity mBillSplitterActivity;
+    private EditActivity mEditActivity;
     private Bill mBill;
     private EditText mSubtotal;
     private EditText mGST;
@@ -143,9 +149,18 @@ public class EditFragment extends Fragment {
                 startActivity(myWebLink);
                 return true;
             case R.id.action_done:
+                hideKeyboard();
                 if (mBillSplitterActivity != null) {
                     mBillSplitterActivity.setActivityBill(mBill);
                     mBillSplitterActivity.fragmentSuicide();
+                }
+                else if (mEditActivity != null) {
+                    mEditActivity.startBillSplitting();
+                }
+                else {
+                    // Start bill splitter activity
+                    Intent intent = new Intent(this.getActivity(), BillSplitterActivity.class);
+                    startActivity(intent);
                 }
                 return true;
             default:
@@ -160,11 +175,25 @@ public class EditFragment extends Fragment {
         if (activity instanceof BillSplitterActivity) {
             mBillSplitterActivity = (BillSplitterActivity) activity;
             mBill = mBillSplitterActivity.getActivityBill();
+
+            mBillSplitterActivity.displayToast(getString(R.string.click_done_when_complete), true);
+        }
+        else if(activity instanceof EditActivity) {
+            mEditActivity = (EditActivity) activity;
+            mBill = mEditActivity.getActivityBill();
         }
         else {
             mBill = new Bill();
         }
-        mBillSplitterActivity.displayToast(getString(R.string.click_done_when_complete), true);
+        // do not show keyboard on start of Edit. Allow user to check first.
+        hideKeyboard();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // do not show keyboard on start of Edit. Allow user to check first.
+        hideKeyboard();
     }
 
     private void setOnFocusChangeListener(EditText editText){
@@ -189,7 +218,7 @@ public class EditFragment extends Fragment {
 
     public void setValueOfEditText(String text, int viewId)
     {
-        Log.d("onFocusChange", viewId + ":" + text );
+        Log.d("onFocusChange", viewId + ":" + text);
         if(text.isEmpty()) {
             text = "0";
         }
@@ -301,7 +330,7 @@ public class EditFragment extends Fragment {
         Log.d("updateItems", Integer.toString(numOfItems));
 
         Item item = mBill.getListOfAllItems().get(numOfItems-1);
-        addItemRow(item, numOfItems-1);
+        addItemRow(item, numOfItems - 1);
     }
 
     private void updateTotals() {
@@ -320,13 +349,28 @@ public class EditFragment extends Fragment {
         int index = mBill.getListOfAllItems().size()-1;
         Item item = mBill.getListOfAllItems().get(index);
         addItemRow(item, index);
+
+        // Set focus to new row
+        TableRow row = (TableRow) mLayoutEditItems.getChildAt(index + 1);
+        if (row != null) {
+            EditText editText = (EditText) row.getChildAt(0);
+            if (editText != null)
+                editText.requestFocus();
+        }
     }
 
     public void deleteItem(int itemIndex) {
-        Log.d ("deleteItem", Integer.toString(itemIndex));
+        Log.d("deleteItem", Integer.toString(itemIndex));
+
+        try {
+            mLayoutEditItems.removeViewAt(itemIndex + 1);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
         // delete item at location itemIndex
+        // needs to be done only after we have finished with the view
         mBill.deleteItem(itemIndex);
-        mLayoutEditItems.removeViewAt(itemIndex + 1);
 
         // and update the rest
         for (int i = (itemIndex+1); i < (mLayoutEditItems.getChildCount()); i++) {
@@ -337,5 +381,14 @@ public class EditFragment extends Fragment {
         }
 
         updateTotals();
+    }
+
+    // Hide keyboard if present
+    private void hideKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if(view != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

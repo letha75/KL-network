@@ -20,6 +20,7 @@ public class ParseBill extends Bill {
     private static final Set<String> fCASH_WORDS = new LinkedHashSet<>();
     private static final Set<String> fWHITELIST_WORDS = new LinkedHashSet<>();
     private static final Set<String> fADJUST_WORDS = new LinkedHashSet<>();
+    private static final Set<String> fMYR_TAXCODE_WORDS = new LinkedHashSet<>();
     // initialise word tokens
     static {
         fTOTAL_WORDS.add("TOTAL");
@@ -66,6 +67,26 @@ public class ParseBill extends Bill {
         fADJUST_WORDS.add("ADJUST");
         //fWHITELIST_WORDS.add("ADJUSTMENT");
         //fWHITELIST_WORDS.add("TOTAL ADJUSTMENT");
+        fMYR_TAXCODE_WORDS.add("SR");
+        fMYR_TAXCODE_WORDS.add("ZRL");
+        fMYR_TAXCODE_WORDS.add("ZRE");
+        fMYR_TAXCODE_WORDS.add("ZR");
+        fMYR_TAXCODE_WORDS.add("DS");
+        fMYR_TAXCODE_WORDS.add("OS");
+        fMYR_TAXCODE_WORDS.add("ES");
+        fMYR_TAXCODE_WORDS.add("RS");
+        fMYR_TAXCODE_WORDS.add("GS");
+        fMYR_TAXCODE_WORDS.add("AJS");
+        fMYR_TAXCODE_WORDS.add("TX");
+        fMYR_TAXCODE_WORDS.add("IM");
+        fMYR_TAXCODE_WORDS.add("IS");
+        fMYR_TAXCODE_WORDS.add("BL");
+        fMYR_TAXCODE_WORDS.add("NR");
+        fMYR_TAXCODE_WORDS.add("ZP");
+        fMYR_TAXCODE_WORDS.add("EP");
+        fMYR_TAXCODE_WORDS.add("OP");
+        fMYR_TAXCODE_WORDS.add("GP");
+        fMYR_TAXCODE_WORDS.add("AJP");
     }
 
     // New Bill() initialisation method
@@ -76,10 +97,8 @@ public class ParseBill extends Bill {
         receiptText = receiptText.toUpperCase();
         String[] lines = receiptText.split("[\n]+");
 
-        // Parse each line of receipt
-        for (String line : lines){
-            parseLine(line);
-        }
+        // Parse receipt format
+        checkFormats(lines);
 
         // Finished parsing, make sure bill is balanced
         balanceBill();
@@ -111,7 +130,71 @@ public class ParseBill extends Bill {
         return receiptText;
     }
 
+    // ********************* CHECKING FORMAT OF RECEIPT ***************************
+
+    // Parse receipt and match different receipt format for best case
+    private void checkFormats(String[] lines) {
+        if (defaultFormat(lines))
+            return;
+        if (taxCodeFormat(lines))
+            return;
+    }
+
+    // Default : Quantity(optional) Description Amount
+    private Boolean defaultFormat(String[] lines) {
+        // Parse each line of receipt
+        for (String line : lines){
+            parseLine(line);
+        }
+
+        // if no items found, return false to check next format
+        if (mListOfAllItems.isEmpty())
+            return false;
+        return true;
+    }
+
+    // Tax Code Format : Quantity(optional) Description Amount TaxCode
+    private Boolean taxCodeFormat(String[] lines) {
+        // reset totals to re-parse entire receipt.
+        BigDecimal tmpTotal = mTotal;
+        BigDecimal tmpSubTotal = mSubTotal;
+        BigDecimal tmpGST = mGST;
+        BigDecimal tmpSVC = mSVC;
+        BigDecimal tmpAdjust = mAdjust;
+        mTotal = BigDecimal.ZERO;
+        if(!isZero(sumOfTotals())) {
+            mSubTotal = mGST = mSVC = mAdjust = BigDecimal.ZERO;
+        }
+        mIsPrevLineItem = false;
+
+        // Parse each line of receipt
+        for (String line : lines){
+            // Get rid of last column on each line of receipt
+            line = line.replaceAll("\\w+$", "");
+            line = line.trim();
+            // before parse line
+            parseLine(line);
+        }
+
+        // replace totals
+        if (isZero(mTotal))
+            mTotal = tmpTotal;
+        if (isZero(mSubTotal))
+            mSubTotal = tmpSubTotal;
+        if (isZero(mGST))
+            mGST = tmpGST;
+        if (isZero(mSVC))
+            mSVC = tmpSVC;
+        if (isZero(mAdjust))
+            mAdjust = tmpAdjust;
+
+        if (mListOfAllItems.isEmpty())
+            return false;
+        return true;
+    }
+
     // ********************* PARSING OF RECEIPT ***************************
+
     Boolean mIsPrevLineItem = false;
     // parse receipt line to match ether item amount, total, subtotal, gst or svc
     private void parseLine(String line){

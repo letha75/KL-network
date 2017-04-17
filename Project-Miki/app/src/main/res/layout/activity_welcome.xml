@@ -5,59 +5,82 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" >
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@drawable/background">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/imgWWCodeKL"
+        android:id="@+id/imgSplitBillLah"
         android:src="@drawable/project_miki_banner"
-        android:contentDescription="Project Miki banner"
+        android:contentDescription="@string/banner"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_above="@+id/btnCamera"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@android:color/transparent" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/brought_to_you"
+        android:id="@+id/tvCredits"
+        android:layout_toLeftOf="@+id/imgWWCode"
+        android:layout_alignTop="@+id/imgWWCode"
+        android:textColor="@color/secondary_lighter"
+        android:layout_marginRight="@dimen/layout_horizontal_margin"
+        android:layout_marginEnd="@dimen/layout_horizontal_margin"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgWWCode"
+        android:src="@drawable/wwc_logo"
+        android:contentDescription="@string/banner"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/imgSplitBillLah"
+        android:background="@android:color/transparent" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/kuala_lumpur"
+        android:id="@+id/tvCredits2"
+        android:layout_toRightOf="@+id/imgWWCode"
+        android:layout_alignBottom="@+id/imgWWCode"
+        android:textColor="@color/secondary_lighter"
+        android:layout_marginLeft="@dimen/layout_horizontal_margin"
+        android:layout_marginStart="@dimen/layout_horizontal_margin"/>
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btnCamera"
-        android:src="@drawable/ic_camera_alt_black_48dp"
+        android:src="@drawable/ic_camera_alt_white_48dp"
         android:onClick="resultInputMethodSelected"
         android:clickable="true"
-        android:layout_above="@+id/btnGallery"
-        android:layout_alignLeft="@+id/btnGallery"
-        android:layout_alignStart="@+id/btnGallery" />
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:background="@android:color/transparent"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btnGallery"
-        android:src="@drawable/ic_collections_black_48dp"
+        android:src="@drawable/ic_collections_white_48dp"
         android:clickable="true"
         android:onClick="resultInputMethodSelected"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@+id/btnCamera"
+        android:layout_alignLeft="@+id/btnCamera"
+        android:layout_alignStart="@+id/btnCamera"
+        android:background="@android:color/transparent"/>
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btnEdit"
-        android:src="@drawable/ic_edit_black_48dp"
+        android:src="@drawable/ic_edit_white_48dp"
         android:clickable="true"
         android:onClick="resultInputMethodSelected"
         android:layout_below="@+id/btnGallery"
         android:layout_alignLeft="@+id/btnGallery"
-        android:layout_alignStart="@+id/btnGallery" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/show_welcome"
-        android:id="@+id/cbShowWelcome"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:checked="false" />
+        android:layout_alignStart="@+id/btnGallery"
+        android:background="@android:color/transparent"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -67,7 +90,8 @@
         android:id="@+id/tvCamera"
         android:layout_alignBottom="@+id/btnCamera"
         android:layout_toRightOf="@+id/btnCamera"
-        android:layout_toEndOf="@+id/btnCamera"/>
+        android:layout_toEndOf="@+id/btnCamera"
+        android:textColor="@color/primary_text_default_material_dark"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -76,8 +100,8 @@
         android:id="@+id/tvGallery"
         android:layout_alignBottom="@+id/btnGallery"
         android:layout_toLeftOf="@+id/btnGallery"
-        android:layout_toStartOf="@+id/btnGallery" />
-
+        android:layout_toStartOf="@+id/btnGallery"
+        android:textColor="@color/primary_text_default_material_dark"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -86,6 +110,17 @@
         android:id="@+id/tvEdit"
         android:layout_alignBottom="@+id/btnEdit"
         android:layout_toRightOf="@+id/btnEdit"
-        android:layout_toEndOf="@+id/btnEdit" />
+        android:layout_toEndOf="@+id/btnEdit"
+        android:textColor="@color/primary_text_default_material_dark"/>
 
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/show_welcome"
+        android:id="@+id/cbShowWelcome"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false"
+        android:textColor="@color/secondary_lighter"/>
 </RelativeLayout>

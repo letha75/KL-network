@@ -79,7 +79,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/bill_split_instructions"
         android:id="@+id/tvInstructions"
-        android:textColor="@color/secondary_light"
+        android:textColor="@color/secondary_lighter"
         style="@style/Base.Theme.AppCompat.Dialog" />
 
     <ScrollView
@@ -130,7 +130,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@color/primary_dark_material_dark"
-            android:text="@string/guest_init"
+            android:text="@string/amount_init"
             android:id="@+id/tvSummary"/>
     </LinearLayout>
 
@@ -147,21 +147,34 @@
             android:text="@string/prev"
             android:clickable="true"
             android:onClick="previousGuest"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:background="@drawable/button"
+            android:layout_marginRight="@dimen/layout_horizontal_margin"
+            android:textColor="@color/primary_text_default_material_dark"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
         <Button
             android:id="@+id/button_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/next"
             android:clickable="true"
-            android:onClick="nextGuest" />
+            android:onClick="nextGuest"
+            android:background="@drawable/button"
+            android:textColor="@color/primary_text_default_material_dark"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
         <Button
             android:id="@+id/button_done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/done"
             android:clickable="true"
-            android:onClick="finishBillSplit" />
+            android:onClick="finishBillSplit"
+            android:background="@drawable/button"
+            android:layout_marginLeft="@dimen/layout_horizontal_margin"
+            android:textColor="@color/primary_text_default_material_dark"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
 
     </LinearLayout>
 
